@@ -75,7 +75,7 @@ def cmd_use(user, message):
     user.use_wallet(wal.addr)
     
     resp = "Selected:\n%s"%(wallet_balance(wal, user.permission_level >= name_to_levels['admin'])[0])
-    bot.send_message(user.uid, resp.replace(".", "\\.").replace("-", "\\-"), reply_markup=gen_markup(commands_main_page["Account"]), parse_mode="MarkdownV2")
+    move_back(user, resp)
 
 def cmd_new_pass(user, message):
     if len(user.args) == 0:
