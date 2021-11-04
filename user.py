@@ -82,7 +82,7 @@ class CONFIG(object):
     def get_readable_name(addr):
         if addr in CONFIG.wallets:
             return CONFIG.wallets[addr].get_readable_name()
-        if addr in CONFIG.whitelist:
+        elif addr in CONFIG.whitelist:
             return f"'{CONFIG.whitelist[addr]['name']}' '{addr[2:6]}...{addr[-4:]}'"
         return addr.replace("ronin:", "0x")
         

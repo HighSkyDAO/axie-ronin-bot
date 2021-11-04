@@ -177,7 +177,7 @@ def cmd_send(user, message):
     except binascii.Error:
         raise BotError('Bad address or value format')
     
-    move_back(user, "Success\ntxID: `%s`"%tx)  
+    move_back(user, "Success\ntxID: `%s`"%txID)  
 
 def cmd_whitelist(user, message):
     if user.permission_level < name_to_levels["admin"]:
@@ -368,7 +368,7 @@ def cmd_breed(user, message):
         raise BotError("Axie2 not in your inventory")
         
     txID = wal.breed(ax1, ax2)
-    move_back(user, "Success\ntxID: `%s`"%tx)  
+    move_back(user, "Success\ntxID: `%s`"%txID)  
 
     
 def cmd_claim_all(user, message):

@@ -35,9 +35,7 @@ def encode_defunct(
     
 class Account():
     def __init__(self, private_key, login=False):
-        privKey = HexBytes(private_key)    
-        
-        self.private_key = keys.PrivateKey(privKey)
+        self.private_key = keys.PrivateKey(HexBytes(private_key))
         self.public_key = self.private_key.public_key        
         self.addr = "0x%s"%Web3.keccak(self.public_key.to_bytes()).hex()[-40:]
         
@@ -48,10 +46,8 @@ class Account():
         CONFIG.acc_id += 1
         self.r = requests.Session() 
         self.auth = False
-        if not private_key:
-            self.private_key = "0x"+self.private_key
             
-        if not private_key or login:
+        if login:
             self.login_market()
         
     def create():
@@ -155,7 +151,8 @@ class Account():
             
         from_addr = Web3.toChecksumAddress(self.addr)
         nonce = free_eth.get_transaction_count(from_addr)
-        txn = txn.buildTransaction({'gas': 1000000, 'gasPrice': 0, 'nonce': nonce}) 
+        txn = txn.buildTransaction({'gas': 500000, 'gasPrice': 0, 'nonce': nonce}) 
+        print(txn)
         signed_txn = free_eth.account.sign_transaction(txn, self.private_key)
         txHash = free_eth.send_raw_transaction(signed_txn.rawTransaction)
         return HexBytes(txHash).hex()
@@ -179,7 +176,7 @@ class Account():
         if info['owner'] == self.addr:
             raise BotError("This is your axie")
             
-        if Web3.fromWei(price, 'ether') > Web3.toWei(self.balance(), 'ether'):
+        if Web3.fromWei(price, 'ether') > self.balance():
             raise BotError("Not enough ETH fro buy")
         
         txn = market_contract.functions.settleAuction(seller_addr, CONFIG.contracts[info["chain"]], price, int(info['auction']["listingIndex"]), int(info['auction']['state']))
@@ -246,11 +243,16 @@ class Account():
         
     def slp_balance(self):
         slp_info = self.get_slp_info()
-        return {
-                    "value": slp_info["claimable_total"],
-                    "allow": not (((time.time() - slp_info['last_claimed_item_at'] < 14*24*60*60) and slp_info['blockchain_related']['signature']['amount'] == slp_info['blockchain_related']['checkpoint']) or not slp_info['blockchain_related']['signature']),
-                    "claimable": slp_info["total"] - slp_info['claimable_total']
-               }
+        
+        ret = {"value": 0, 'allow': False, 'claimable': 0}
+        if 'blockchain_related' in slp_info:
+            ret['value'] = slp_info['blockchain_related']["balance"] or 0
+            
+            if 'signature' in slp_info['blockchain_related'] and slp_info['blockchain_related']['signature']:
+                ret['claimable'] = slp_info['blockchain_related']['signature']['amount'] - slp_info['blockchain_related']['checkpoint']
+                ret['allow'] = (time.time() - slp_info['last_claimed_item_at'] >= 14*24*60*60) or ret['claimable'] != 0
+                
+        return ret
         
     def breed_slp_price(self, axie_id):
         txn = axies_contract.functions.getRequirementsForBreeding(axie_id)
