@@ -105,7 +105,6 @@ class Account():
             self.login_market()
             
         new_pass = ''.join(random.choices(string.ascii_uppercase + string.digits + string.ascii_lowercase, k=16))
-        print(new_pass)
         reqData = {"operationName":"UpdatePassword","variables":{"password":new_pass, "oldPassword":hashlib.sha256(old_pass.encode("raw_unicode_escape")).hexdigest()},"query":"mutation UpdatePassword($password: String!, $oldPassword: String!) {\n  updatePassword(newPassword: $password, password: $oldPassword) {\n    result\n    __typename\n  }\n}\n"}
         self.send_req(CONFIG.marketql, reqData)
         
@@ -123,7 +122,6 @@ class Account():
         slp_info = self.get_slp_info()
         from_addr = Web3.toChecksumAddress(self.addr)
         slp_sign = slp_info["blockchain_related"]['signature']
-        print(slp_info)
         if not slp_sign or (time.time() - slp_info['last_claimed_item_at'] < 14*24*60*60 and slp_sign['amount'] == slp_info['blockchain_related']['checkpoint']):
             raise BotError("Now you cant claim SLP")
             
@@ -135,6 +133,11 @@ class Account():
         signed_message = free_eth.account.sign_message(message, private_key=self.private_key)
         return signed_message
     
+    def get_market_axies(self):
+        reqData = {"operationName":"GetAxieBriefList","variables":{"from":0,"size":24,"sort":"PriceAsc","auctionType":"Sale","owner":None,"criteria":{"region":None,"parts":None,"bodyShapes":None,"classes":None,"stages":None,"numMystic":None,"pureness":None,"title":None,"breedable":None,"breedCount":None,"hp":[],"skill":[],"speed":[],"morale":[]}},"query":"query GetAxieBriefList($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {\n  axies(auctionType: $auctionType, criteria: $criteria, from: $from, sort: $sort, size: $size, owner: $owner) {\n    total\n    results {\n      ...AxieBrief\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AxieBrief on Axie {\n  id\n  name\n  stage\n  class\n  breedCount\n  image\n  title\n  battleInfo {\n    banned\n    __typename\n  }\n  auction {\n    currentPrice\n    currentPriceUSD\n    __typename\n  }\n  parts {\n    id\n    name\n    class\n    type\n    specialGenes\n    __typename\n  }\n  __typename\n}\n"}
+        resp = self.send_req(CONFIG.marketql, reqData)
+        return resp['data']['axies']["results"]
+        
     def get_free_send(self):
         data = {"id":CONFIG._id, "jsonrpc":"2.0","params":[self.addr],"method":"eth_getFreeGasRequests"}
         resp = self.send_req(CONFIG.free_rpc, data)
@@ -146,13 +149,13 @@ class Account():
         return resp['data']['axie']
     
     def send_raw(self, txn):
-        if self.get_free_send() == 0:
+        if self.get_free_send() <= 10:
             raise BotError("Not enough free send count")
             
         from_addr = Web3.toChecksumAddress(self.addr)
         nonce = free_eth.get_transaction_count(from_addr)
-        txn = txn.buildTransaction({'gas': 500000, 'gasPrice': 0, 'nonce': nonce}) 
-        print(txn)
+        
+        txn = txn.buildTransaction({'gas': txn.estimateGas(), 'gasPrice': 0, 'nonce': nonce}) 
         signed_txn = free_eth.account.sign_transaction(txn, self.private_key)
         txHash = free_eth.send_raw_transaction(signed_txn.rawTransaction)
         return HexBytes(txHash).hex()
@@ -172,7 +175,7 @@ class Account():
         
     def buy_axie(self, info):
         seller_addr = Web3.toChecksumAddress(info['owner'])
-        price = int(info['auction']['suggestedPrice'])
+        price = int(info['auction']['currentPrice'])
         if info['owner'] == self.addr:
             raise BotError("This is your axie")
             
@@ -196,7 +199,6 @@ class Account():
             
         reqData = {"operationName":"MorphAxie","variables":{"axieId":"%d"%axie_id, "owner":self.addr,"signature":sign_msg.signature.hex()},"query":"mutation MorphAxie($axieId: ID!, $owner: String!, $signature: String!) {\n  morphAxie(axieId: $axieId, owner: $owner, signature: $signature)\n}\n"}
         resp = self.send_req(CONFIG.marketql, reqData)
-        print(resp)
         return resp['data']['morphAxie']
         
     def sell_axie(self, axie_id, min_value, max_value, max_days):
