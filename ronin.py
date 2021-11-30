@@ -76,7 +76,7 @@ class Account():
         return Web3.fromWei(int(HexBytes(resp).hex(), 16), 'ether')
         
     def get_readable_name(self):
-        return f"{self.id}. '{self.market_name}' '{self.addr[2:6]}...{self.addr[-4:]}'"
+        return f"'{self.market_name}' '{self.addr[2:6]}...{self.addr[-4:]}'"
         
     def login_market(self):
         reqData = {"operationName":"CreateRandomMessage","variables":{},"query":"mutation CreateRandomMessage {\n  createRandomMessage\n}\n"}

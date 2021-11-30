@@ -8,7 +8,7 @@ from user import User, CONFIG, name_to_levels
 from web3 import Web3
 from ronin import BotError
 from hexbytes import HexBytes
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 
 CONFIG.load_config()
 CONFIG.load_users()
@@ -68,14 +68,14 @@ def cmd_allow(user, message):
     
 def cmd_use(user, message):
     if len(user.args) == 0:
-        return "Select Account", [CONFIG.wallets[x].get_readable_name() for x in CONFIG.wallets]
+        return "Select Account", {"text": [CONFIG.wallets[x].get_readable_name() for x in CONFIG.wallets], "callback_data": [wal for wal in CONFIG.wallets]}
     
-    wal = CONFIG.wallets[CONFIG.get_wallet_addr_by_rname(user.args[0])]
+    wal = CONFIG.wallets[user.args[0]]
     
     user.use_wallet(wal.addr)
     
     resp = "Selected:\n%s"%(wallet_balance(wal, user.permission_level >= name_to_levels['admin'])[0])
-    move_back(user, resp)
+    bot.send_message(user.uid, resp, reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
 
 def cmd_new_pass(user, message):
     if len(user.args) == 0:
@@ -151,9 +151,9 @@ def cmd_send(user, message):
         raise BotError("Wrong type! Available: %s"%(', '.join(CONFIG.send_limit.keys()))) 
         
     if len(user.args) == 1:
-        return "Enter ronin address", [CONFIG.get_readable_name(wl_addr) for wl_addr in CONFIG.whitelist]
+        return "Enter ronin address", {"text": [CONFIG.whitelist[wal]['name'] for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
         
-    to_addr = CONFIG.get_wallet_addr_by_rname(user.args[1])  
+    to_addr = user.args[1]
     
     if len(user.args) == 2:
         max_val = CONFIG.send_limit[type]
@@ -207,10 +207,9 @@ def cmd_whitelist_del(user, message):
         
     args = user.args
     if len(args) == 0:
-        return "Enter name", [CONFIG.whitelist[wal]['name'] for wal in CONFIG.whitelist]
+        return "Enter name", {"text": [CONFIG.whitelist[wal]['name'] for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
         
-    name = args[0]    
-    address = CONFIG.get_wallet_addr_by_rname(f"'{name}'")
+    address = args[0]
     CONFIG.del_whitelist(address)
     move_back(user, "Success")
     
@@ -245,9 +244,9 @@ def cmd_gift(user, message):
         return "Select axie", [ax['id'] for ax in user.get_wallet().get_axies()]
         
     if len(args) == 1:
-        return "Enter ronin address", [CONFIG.get_readable_name(wl_addr) for wl_addr in CONFIG.whitelist]
+        return "Enter ronin address", {"text": [CONFIG.whitelist[wal]['name'] for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
     
-    to_addr = CONFIG.get_wallet_addr_by_rname(user.args[1]) 
+    to_addr = user.args[1]
     
     if to_addr not in CONFIG.whitelist and user.permission_level < name_to_levels["admin"]:
         raise BotError("Destination address not in whitelist")
@@ -391,9 +390,9 @@ def cmd_claim_gather(user, message):
         
     args = user.args
     if len(args) == 0:
-        return "Enter ronin address", [CONFIG.get_readable_name(wl_addr) for wl_addr in CONFIG.whitelist]
+        return "Enter ronin address", {"text": [CONFIG.whitelist[wal]['name'] for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
     
-    to_addr = CONFIG.get_wallet_addr_by_rname(user.args[0])
+    to_addr = user.args[0]
         
     if to_addr not in CONFIG.whitelist and user.permission_level < name_to_levels["admin"]:
         raise BotError("Destination address not in whitelist")
@@ -560,6 +559,49 @@ command_list = {
     "Claim All": cmd_claim_all
 }
 
+def gen_inline_markup(datas, size):
+    if len(datas['text']) != len(datas['callback_data']):
+        raise BotError("Missmatch len gen_inline_markup")
+        
+    markup = InlineKeyboardMarkup()
+    markup.row_width = size
+    
+    for i in range(len(datas['text'])):
+        print(datas['text'][i])
+        print(datas['callback_data'][i])
+        markup.add(InlineKeyboardButton(datas['text'][i], callback_data=datas['callback_data'][i]))
+    return markup
+    
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    print(call.data)
+    try:
+        uid = call.from_user.id
+        cid = call.message.chat.id
+        mid = call.message.message_id
+        
+        user = users[uid]
+        user.args.append(call.data)
+        
+        res = command_list[user.command](user, call.message)
+        if res:
+            msg = res[0]
+            btns = res[1]
+            if not isinstance(res[1], dict):
+                btns = {"text": res[1], "callback_data": res[1]}
+            bot.edit_message_text(msg, cid, mid, reply_markup=gen_inline_markup(btns, 1))
+        else:
+            bot.delete_message(cid, mid)
+    except BotError as be:
+        bot.send_message(uid, 'Error: %s'%be.msg)
+        if len(user.args) > 0:
+            user.args.pop()
+    except:
+        bot.send_message(uid, 'Error while handle your request...')
+        traceback.print_exc()
+        
+    bot.answer_callback_query(call.id)
+        
 @bot.message_handler(content_types=['text'])
 def parse_text(message):
     print(HexBytes(message.text.encode('raw_unicode_escape')))    
@@ -600,7 +642,11 @@ def parse_text(message):
         
         res = command_list[command](user, message)
         if res:
-            bot.send_message(user.uid, res[0], reply_markup=gen_markup(res[1], 1))
+            msg = res[0]
+            btns = res[1]
+            if not isinstance(res[1], dict):
+                btns = {"text": res[1], "callback_data": res[1]}
+            bot.send_message(user.uid, msg, reply_markup=gen_inline_markup(btns, 1))
     except BotError as be:
         bot.send_message(uid, 'Error: %s'%be.msg)
         if len(user.args) > 0:

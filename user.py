@@ -85,27 +85,7 @@ class CONFIG(object):
         elif addr in CONFIG.whitelist:
             return f"'{CONFIG.whitelist[addr]['name']}' '{addr[2:6]}...{addr[-4:]}'"
         return addr.replace("ronin:", "0x")
-        
-    def get_wallet_addr_by_rname(readable_name):
-        if ". '" in readable_name:
-            _id = int(readable_name.split(". '")[0])
-            for wal in CONFIG.wallets:
-                if CONFIG.wallets[wal].id == _id:
-                    return wal
-        
-        elif readable_name[0] == "'":
-            name = readable_name.split("'")[1]
-            for wal in CONFIG.whitelist:
-                if CONFIG.whitelist[wal]['name'] == name:
-                    return wal
-                    
-        else:    
-            addr = readable_name.replace("ronin:", "0x")
-            if addr in CONFIG.wallets:
-                return addr
-            
-        raise BotError("Wallet not found")
-        
+                
     def load_users():
         if CONFIG.owner_id not in CONFIG.users:
             CONFIG.users[CONFIG.owner_id] = User(CONFIG.owner_id)
