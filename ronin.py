@@ -57,7 +57,7 @@ class Account():
         
         error = ""
         for i in range(5):
-            resp = self.r.post(url, json=reqData)
+            resp = self.r.post(url, json=reqData, headers=CONFIG.headers)
             jData = json.loads(resp.text)
             if "errors" in jData:
                 error = ''.join("%s\n"%x['message'] for x in jData["errors"])
@@ -155,7 +155,7 @@ class Account():
         from_addr = Web3.toChecksumAddress(self.addr)
         nonce = free_eth.get_transaction_count(from_addr)
         
-        txn = txn.buildTransaction({'gas': txn.estimateGas(), 'gasPrice': 0, 'nonce': nonce}) 
+        txn = txn.buildTransaction({'gas': 100000, 'gasPrice': 0, 'nonce': nonce}) 
         signed_txn = free_eth.account.sign_transaction(txn, self.private_key)
         txHash = free_eth.send_raw_transaction(signed_txn.rawTransaction)
         return HexBytes(txHash).hex()
@@ -301,8 +301,13 @@ class CONFIG(object):
     _id = 0
     acc_id = 1
 
-free_eth   = Web3(HTTPProvider(CONFIG.free_rpc)).eth
-common_eth = Web3(HTTPProvider(CONFIG.common_rpc)).eth
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36"
+    }
+    
+free_eth   = Web3(HTTPProvider(CONFIG.free_rpc, request_kwargs={"headers": CONFIG.headers})).eth
+common_eth = Web3(HTTPProvider(CONFIG.common_rpc, request_kwargs={"headers": CONFIG.headers})).eth
 ronin_contract = free_eth.contract(address=CONFIG.contracts['ronin'], abi=json.loads(open('ronin_eth.json').read()))
 market_contract = free_eth.contract(address=CONFIG.contracts['market'], abi=json.loads(open('market_abi.json').read()))
 axies_contract = free_eth.contract(address=CONFIG.contracts['axies'], abi=json.loads(open('axies_abi.json').read()))

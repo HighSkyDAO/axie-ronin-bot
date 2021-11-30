@@ -33,7 +33,7 @@ def wallet_balance(wal, isAdmin=False):
         resp += "Password: `%s`\n"%(wal.market_pass)
     
     resp += "Address: `%s`\n"%wal.addr
-    resp += "Balance:\n    ETH `%.8f`\n    SLP `%d`, %s\n    AXS `%d`\n"%(eth_bal, slp_bal['value'], unc, axs_bal)
+    resp += "Balance:\n    ETH `%.8f`\n    SLP `%d, %s`\n    AXS `%d`\n"%(eth_bal, slp_bal['value'], unc, axs_bal)
     resp += "Axie list: "
     
     for axie in wal.get_axies():
@@ -50,7 +50,7 @@ def wallet_balance(wal, isAdmin=False):
 def cmd_balance(user, message):
     wal = user.get_wallet() 
     resp = wallet_balance(wal, user.permission_level >= name_to_levels['admin'])[0]
-    bot.send_message(user.uid, resp.replace(".", "\\.").replace("-", "\\-"), parse_mode="MarkdownV2")
+    move_back(user, resp)
     
 def cmd_allow(user, message):
     if user.permission_level < name_to_levels["admin"]:
@@ -455,12 +455,20 @@ def cmd_change_perm(user, message):
     
 def move_back(user, text):
     if len(user.page) > 0:
-        command = user.page.pop()
+        if user.page[-1] != user.command:
+            command = user.page.pop()
+        else:
+            if len(user.page) > 1:
+                user.page.pop()
+                command = user.page.pop()
+            else:
+                command = "/start"
     else:
         command = "/start"
             
     bot.send_message(user.uid, text.replace(".", "\\.").replace("-", "\\-"), parse_mode="MarkdownV2")  
-    command_list[command](user, None)
+    if "page_" in command_list[command].__name__:
+        command_list[command](user, None)
     
 def gen_markup(listb, width=2, exclude_back=False):
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
@@ -485,12 +493,16 @@ def cmd_start(user, message):
     bot.send_message(user.uid, f"Hi, your id: {user.uid}", reply_markup=gen_markup(buttons, exclude_back=True))
     
 def page_axies(user, message):
-    user.page.append("Axies")
+    if message:
+        user.page.append("Axies")
+        
     buttons = ["Buy", "Sell auction", "Sell fixed", "Gift", "Breed", "Morph"]
     bot.send_message(user.uid, "Which next?", reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
 
 def page_account(user, message):
-    user.page.append("Account")
+    if message:
+        user.page.append("Account")
+        
     wal = user.get_wallet()
     resp =  "Current Account:\n%d. `%s`\n"%(wal.id, wal.market_name)
     resp += "Email: `%s`\n"%(wal.market_mail)
@@ -501,12 +513,16 @@ def page_account(user, message):
     bot.send_message(user.uid, msg, reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
 
 def page_permisson(user, message):
-    user.page.append("Permissions")
+    if message:
+        user.page.append("Permissions")
+        
     buttons = ["Add user", "Change status", "Add whitelist", "Delete whitelist", "Change user permission"]
     bot.send_message(user.uid, "Which next?", reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
 
 def page_slps(user, message):
-    user.page.append("Axies")
+    if message:
+        user.page.append("SLP Actions")
+        
     buttons = ["Gather to one", "Claim All"]
     bot.send_message(user.uid, "Which next?", reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
     
@@ -575,7 +591,6 @@ def parse_text(message):
                     command = "/start"
         else:
             command = "/start"
-        
     try:       
         if command not in command_list:
             user.args.append(command)
@@ -594,5 +609,6 @@ def parse_text(message):
         bot.send_message(uid, 'Error while handle your request...')
         traceback.print_exc()
 
+    print(user.page)    
 print("Started")     
 bot.polling(none_stop=True)
