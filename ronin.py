@@ -154,8 +154,9 @@ class Account():
             
         from_addr = Web3.toChecksumAddress(self.addr)
         nonce = free_eth.get_transaction_count(from_addr)
+        est_gas = free_eth.estimate_gas({'from': from_addr, 'to': txn.address, 'data':txn._encode_transaction_data()})
+        txn = txn.buildTransaction({'gas': est_gas, 'gasPrice': 0, 'nonce': nonce})
         
-        txn = txn.buildTransaction({'gas': 100000, 'gasPrice': 0, 'nonce': nonce}) 
         signed_txn = free_eth.account.sign_transaction(txn, self.private_key)
         txHash = free_eth.send_raw_transaction(signed_txn.rawTransaction)
         return HexBytes(txHash).hex()

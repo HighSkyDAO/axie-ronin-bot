@@ -75,7 +75,7 @@ def cmd_use(user, message):
     user.use_wallet(wal.addr)
     
     resp = "Selected:\n%s"%(wallet_balance(wal, user.permission_level >= name_to_levels['admin'])[0])
-    bot.send_message(user.uid, resp, reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
+    move_back(user, resp)
 
 def cmd_new_pass(user, message):
     if len(user.args) == 0:
@@ -501,11 +501,13 @@ def page_axies(user, message):
 def page_account(user, message):
     if message:
         user.page.append("Account")
+        wal = user.get_wallet()
+        resp =  "Current Account:\n%d. `%s`\n"%(wal.id, wal.market_name)
+        resp += "Email: `%s`\n"%(wal.market_mail)
+        resp += "Address: `%s`\n"%wal.addr
+    else:
+        resp = "Which next?"
         
-    wal = user.get_wallet()
-    resp =  "Current Account:\n%d. `%s`\n"%(wal.id, wal.market_name)
-    resp += "Email: `%s`\n"%(wal.market_mail)
-    resp += "Address: `%s`\n"%wal.addr
     msg = resp.replace(".", "\\.").replace("-", "\\-")
     
     buttons = ["Balance", "Send crypto", "Change password", "Change Account", "Axies"]
