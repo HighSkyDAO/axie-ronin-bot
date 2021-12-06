@@ -8,6 +8,14 @@ from eth_utils.curried import to_bytes
 from eth_keys import keys
 from web3 import Web3, HTTPProvider
 from hexbytes import HexBytes
+import traceback
+
+proxy = {}
+
+j = json.loads(open("credentials.json", 'rb').read())
+if "proxy" in j:
+    proxy = {'http': j['proxy'], 'https':j['proxy']}
+    print(proxy)
 
 class BotError(BaseException):
     def __init__(self, errmsg):
@@ -57,7 +65,8 @@ class Account():
         try:
             error = ""
             for i in range(5):
-                resp = self.r.post(url, json=reqData, headers=CONFIG.headers)
+                s = "socks5://user:pwd0ff@45.79.250.51:8088"
+                resp = self.r.post(url, json=reqData, headers=CONFIG.headers, proxies=proxy)
                 if resp.status_code != 200:
                     print("CODE: %d, %s"%(resp.status_code, resp.text))
                 else:
@@ -313,8 +322,8 @@ class CONFIG(object):
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36"
     }
     
-free_eth   = Web3(HTTPProvider(CONFIG.free_rpc, request_kwargs={"headers": CONFIG.headers})).eth
-common_eth = Web3(HTTPProvider(CONFIG.common_rpc, request_kwargs={"headers": CONFIG.headers})).eth
+free_eth   = Web3(HTTPProvider(CONFIG.free_rpc, request_kwargs={"headers": CONFIG.headers, "proxies": proxy})).eth
+common_eth = Web3(HTTPProvider(CONFIG.common_rpc, request_kwargs={"headers": CONFIG.headers, "proxies": proxy})).eth
 ronin_contract = free_eth.contract(address=CONFIG.contracts['ronin'], abi=json.loads(open('ronin_eth.json').read()))
 market_contract = free_eth.contract(address=CONFIG.contracts['market'], abi=json.loads(open('market_abi.json').read()))
 axies_contract = free_eth.contract(address=CONFIG.contracts['axies'], abi=json.loads(open('axies_abi.json').read()))
