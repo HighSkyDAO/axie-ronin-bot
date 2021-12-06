@@ -54,19 +54,25 @@ class Account():
         return Account()
     
     def send_req(self, url, reqData):
-        
-        error = ""
-        for i in range(5):
-            resp = self.r.post(url, json=reqData, headers=CONFIG.headers)
-            jData = json.loads(resp.text)
-            if "errors" in jData:
-                error = ''.join("%s\n"%x['message'] for x in jData["errors"])
-                print(error)
-            else:
-                return jData
+        try:
+            error = ""
+            for i in range(5):
+                resp = self.r.post(url, json=reqData, headers=CONFIG.headers)
+                if resp.status_code != 200:
+                    print("CODE: %d, %s"%(resp.status_code, resp.text))
+                else:
+                    jData = json.loads(resp.text)
+                    if "errors" in jData:
+                        error = ''.join("%s\n"%x['message'] for x in jData["errors"])
+                        print(error)
+                    else:
+                        return jData
+                
+            raise BotError("Market request error "+error)
+        except:
+            traceback.print_exc()
+            raise BotError("Market request error "+url)
             
-        raise BotError("Market request error "+error)
-        
     def balance(self):
         if not self.auth:
             self.login_market()
