@@ -65,7 +65,6 @@ class Account():
         try:
             error = ""
             for i in range(5):
-                s = "socks5://user:pwd0ff@45.79.250.51:8088"
                 resp = self.r.post(url, json=reqData, headers=CONFIG.headers, proxies=proxy)
                 if resp.status_code != 200:
                     print("CODE: %d, %s"%(resp.status_code, resp.text))
