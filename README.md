@@ -34,3 +34,8 @@ To see bot logs run:
 ```shell
 sudo sh show_bot_logs.sh
 ```
+
+Or if you want to output logs to file run:
+```shell
+sudo sh show_bot_logs.sh > log_file_name_here.log
+```

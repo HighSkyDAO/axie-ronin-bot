@@ -10,4 +10,5 @@ docker run \
   --mount type=bind,source="$(pwd)"/credentials.json,target=/usr/src/app/credentials.json \
   --mount type=bind,source="$(pwd)"/config.json,target=/usr/src/app/config.json \
   axie-ronin-bot \
-  python setup.py
+  python setup.py && \
+echo 'Setup successful, run "sudo sh scripts/run_bot.sh" to start bot'
