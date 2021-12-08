@@ -151,7 +151,7 @@ def cmd_send(user, message):
         raise BotError("Wrong type! Available: %s"%(', '.join(CONFIG.send_limit.keys()))) 
         
     if len(user.args) == 1:
-        return "Enter ronin address", {"text": [CONFIG.whitelist[wal]['name'] for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
+        return "Enter ronin address", {"text": [CONFIG.get_readable_name(wal) for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
         
     to_addr = user.args[1]
     
@@ -207,7 +207,7 @@ def cmd_whitelist_del(user, message):
         
     args = user.args
     if len(args) == 0:
-        return "Enter name", {"text": [CONFIG.whitelist[wal]['name'] for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
+        return "Enter name", {"text": [CONFIG.get_readable_name(wal) for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
         
     address = args[0]
     CONFIG.del_whitelist(address)
@@ -244,7 +244,7 @@ def cmd_gift(user, message):
         return "Select axie", [ax['id'] for ax in user.get_wallet().get_axies()]
         
     if len(args) == 1:
-        return "Enter ronin address", {"text": [CONFIG.whitelist[wal]['name'] for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
+        return "Enter ronin address", {"text": [CONFIG.get_readable_name(wal) for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
     
     to_addr = user.args[1]
     
@@ -390,7 +390,7 @@ def cmd_claim_gather(user, message):
         
     args = user.args
     if len(args) == 0:
-        return "Enter ronin address", {"text": [CONFIG.whitelist[wal]['name'] for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
+        return "Enter ronin address", {"text": [CONFIG.get_readable_name(wal) for wal in CONFIG.whitelist], "callback_data": [wal for wal in CONFIG.whitelist]}
     
     to_addr = user.args[0]
         
@@ -466,7 +466,7 @@ def move_back(user, text):
         command = "/start"
             
     bot.send_message(user.uid, text.replace(".", "\\.").replace("-", "\\-"), parse_mode="MarkdownV2")  
-    if "page_" in command_list[command].__name__:
+    if "page_" in command_list[command].__name__ or command == "/start":
         command_list[command](user, None)
     
 def gen_markup(listb, width=2, exclude_back=False):
