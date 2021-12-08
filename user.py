@@ -67,7 +67,6 @@ class CONFIG(object):
     owner_id = 0
     seed = ""
     telegram_token = ""
-    fixed_accounts = -1
     
     send_limit = {"ETH": 0, "SLP": 0, "AXS": 0}
     axie_buy_max = 0
@@ -89,9 +88,9 @@ class CONFIG(object):
     def load_users():
         if CONFIG.owner_id not in CONFIG.users:
             CONFIG.users[CONFIG.owner_id] = User(CONFIG.owner_id)
-            CONFIG.users[CONFIG.owner_id].permission_level = name_to_levels["owner"]
-            CONFIG.allowed_users.add(CONFIG.owner_id)
-            CONFIG.save_config()
+        
+        CONFIG.allowed_users.add(CONFIG.owner_id)
+        CONFIG.users[CONFIG.owner_id].set_perm_level(name_to_levels["owner"])
         
     def add_allowed(user_id):
         CONFIG.allowed_users.add(user_id)
@@ -136,16 +135,15 @@ class CONFIG(object):
     
     def fill_wallets():
         i = 0
-        while CONFIG.fixed_accounts != 0:
+        while True:
             private_key = mnemonic_to_private_key(CONFIG.seed, str_derivation_path=f'{ETH_DERIVATION_PATH}/{i}')
             acc = ronin.Account(private_key, True)
-            if acc.market_mail == "-" and CONFIG.fixed_accounts <= 0:
+            if acc.market_mail == "-":
                 break
                 
             print("Imported: %s"%acc.addr)
             CONFIG.wallets[acc.addr] = acc
             CONFIG.whitelist[acc.addr] = {"name": acc.get_readable_name()}
-            CONFIG.fixed_accounts -= 1
             i += 1
         CONFIG.seed = ""
         
@@ -163,7 +161,6 @@ class CONFIG(object):
         CONFIG.owner_id = creds['owner_id']
         CONFIG.seed = creds['seed']
         CONFIG.telegram_token = creds['telegram_token']
-        CONFIG.fixed_accounts = creds['fixed_accounts']
         CONFIG.fill_wallets()
         
         for wal in jIn['wallets']:
@@ -175,9 +172,7 @@ class CONFIG(object):
             u = User(uid_)
             u.wallet_addr = jIn['users'][uid]['wallet_addr']
             u.permission_level = jIn['users'][uid]['permission_level']
-            if u.permission_level >= name_to_levels['admin']:
-                u.set_perm_all(True)
-            elif 'permission' in jIn['users'][uid]:
+            if 'permission' in jIn['users'][uid]:
                 u.permissions = jIn['users'][uid]['permissions']
                 
             CONFIG.users[uid_] = u
