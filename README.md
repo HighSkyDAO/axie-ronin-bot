@@ -32,7 +32,7 @@ sudo sh scripts/run_bot.sh
 
 To see bot logs run:
 ```shell
-sudo sh show_bot_logs.sh
+sudo sh scripts/show_bot_logs.sh
 ```
 
 Or if you want to output logs to file run:
