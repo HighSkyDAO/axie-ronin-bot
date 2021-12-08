@@ -29,3 +29,8 @@ To start bot itself run:
 ```shell
 sudo sh scripts/run_bot.sh
 ```
+
+To see bot logs run:
+```shell
+sudo sh show_bot_logs.sh
+```

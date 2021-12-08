@@ -9,6 +9,7 @@ python = "^3.7.11"
 pyTelegramBotAPI = "^4.2.0"
 web3 = "^5.25.0"
 ecdsa = "^0.17.0"
+requests = {extras = ["socks"], version = "^2.26.0"}
 
 [tool.poetry.dev-dependencies]
 

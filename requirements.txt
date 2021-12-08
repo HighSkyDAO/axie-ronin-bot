@@ -372,6 +372,10 @@ pyrsistent==0.18.0; python_version >= "3.6" and python_version < "4" \
     --hash=sha256:f3ef98d7b76da5eb19c37fda834d50262ff9167c65658d1d8f974d2e4d90676b \
     --hash=sha256:404e1f1d254d314d55adb8d87f4f465c8693d6f902f67eb6ef5b4526dc58e6ea \
     --hash=sha256:773c781216f8c2900b42a7b638d5b517bb134ae1acbebe4d1e8f1f41ea60eb4b
+pysocks==1.7.1; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4" or python_full_version >= "3.6.0" and python_version >= "3.6" and python_version < "4" \
+    --hash=sha256:08e69f092cc6dbe92a0fdd16eeb9b9ffbc13cadfe5ca4c7bd92ffb078b293299 \
+    --hash=sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5 \
+    --hash=sha256:3f8804571ebe159c380ac6de37643bb4685970655d3bba243530d6558b799aa0
 pytelegrambotapi==4.2.0 \
     --hash=sha256:05f85dacbcf0bdf2459698bab4325f3a699d1c04bc61581627d76d075c3d5488
 pywin32==302; python_version >= "3.6" and python_version < "4" and platform_system == "Windows" \
@@ -385,7 +389,7 @@ pywin32==302; python_version >= "3.6" and python_version < "4" and platform_syst
     --hash=sha256:543552e66936378bd2d673c5a0a3d9903dba0b0a87235ef0c584f058ceef5872 \
     --hash=sha256:2393c1a40dc4497fd6161b76801b8acd727c5610167762b7c3e9fd058ef4a6ab \
     --hash=sha256:af5aea18167a31efcacc9f98a2ca932c6b6a6d91ebe31f007509e293dea12580
-requests==2.26.0; python_version >= "3.6" and python_version < "4" and python_full_version >= "3.6.2" and python_full_version < "3.7.0" or python_version >= "3.6" and python_version < "4" and python_full_version > "3.7.0" and python_full_version < "3.7.1" or python_version >= "3.6" and python_version < "4" and python_full_version > "3.7.1" \
+requests==2.26.0; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.6.0") \
     --hash=sha256:6c1246513ecd5ecd4528a0906f910e8f0f9c6b8ec72030dc9fd154dc1a6efd24 \
     --hash=sha256:b8aa58f8cf793ffd8782d3d8cb19e66ef36f7aba4353eec859e74678b01b07a7
 rlp==2.0.1; python_version >= "3.6" and python_version < "4" \
