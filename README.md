@@ -1,41 +1,114 @@
-# Installation
-Pure debian 11 (amd64)
-```
-apt install -y git python3-pip
-pip3 install pyTelegramBotAPI web3 ecdsa
+# Axie Ronin Bot
 
-git clone https://github.com/psih31337/AxieRoninBot
-cd AxieRoninBot
-python3 setup.py
-python3 bot2.py
+Telegram bot that allows you to grant access to Axie Infinity account without disclosing Ronin seed.
+
+### Core features
+- Adding different user roles and permissions
+- Sale, purchase, gift axies and tokens
+- SLP actions: claim and gather
+
+Please note that you are installing the bot yourself on your own server. Only you are responsible for the security of your data. 
+**Do not grant access to your server to unauthorized persons.**
+
+## Preparation
+
+First of all, you need a server on which you will run the bot. 
+You can register VPS with any convenient cloud provider.
+For example, you can use the services of [linode.com](https://www.linode.com/) or [vultr.com](https://www.vultr.com/products/cloud-compute/).
+Please note that access to the Axie Infinity website API is blocked for subnets of some providers (For example: DigitalOcean). 
+You may need to use a proxy to run the bot.
+
+The bot will most likely work on any Linux distribution, 
+but in the future the instruction implies that you are using a Debian compatible system, for example, Ubuntu.
+
+As soon as you get root access to your server, you will need to register a Telegram bot.
+Use [@BotFather](https://t.me/BotFather) `/newbot` command and get bot username and token. 
+
+![register-bot](https://user-images.githubusercontent.com/454185/145290478-488dce81-f6c2-4a2e-92f6-3c20c0504689.png)
+
+You should also get your internal Telegram id using [https://t.me/my_id_bot](https://t.me/my_id_bot).
+
+To use the bot, you also need an [axieinfinity.com](https://marketplace.axieinfinity.com) account with a verified email, 
+and a Seed Recovery Phrase from your [Ronin Wallet](https://wallet.roninchain.com/).
+
+
+## Installation
+
+Download the latest [release](https://github.com/vforvoid/AxieRoninBot/tarball/main) and unpack archive.
+```shell
+mkdir AxieRoninBot && cd AxieRoninBot
+curl -fsSL https://github.com/vforvoid/AxieRoninBot/tarball/main | tar -xz --strip-components=1
 ```
 
 ### Running in Docker container
 
-This section assumes you've already downloaded project's source code with git.
-To install Docker run this or follow instructions from [official guide](https://docs.docker.com/engine/install/):
+If you don't have docker installed yet do it with the command:
 ```shell
-curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh && rm get-docker.sh
 ```
 
-You will first need to set up your accounts.
-Create a new bot in a Telegram [BotFather](https://t.me/BotFather).
-Then add info about your Telegram bot and Ronin by running the following script:
+Then you can start the bot installation:
 ```shell
 sudo sh scripts/run_setup.sh
 ```
-
 To start bot itself run:
+
 ```shell
 sudo sh scripts/run_bot.sh
 ```
 
 To see bot logs run:
-```shell
+
+```
 sudo sh scripts/show_bot_logs.sh
 ```
 
-Or if you want to output logs to file run:
-```shell
-sudo sh show_bot_logs.sh > log_file_name_here.log
+### Manual
+
+You can do without Docker and install the required dependencies manually:
+
 ```
+sudo apt install -y python3-pip
+sudo pip3 install pyTelegramBotAPI web3 ecdsa requests[socks]
+python3 setup.py
+python3 bot2.py
+```
+
+### Using proxy
+
+If you see errors about denying access to the server in the logs after starting the bot, you can use a proxy.
+This bot supports http and socks5 proxy types. Add `proxy` parameter in credentials.json 
+ - `socks5://user:password@example.com:1080` for socks5
+ - `http://user:password@example.com:1080` for http
+
+Complete `credentials.json` sample file:
+```json
+    {
+        "owner_id": 50123456,
+        "seed": "12 seed phrase words",
+        "telegram_token": "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11",
+        "proxy": "socks5://user:password@example.com:1080"
+    }
+```
+
+## How it works
+
+First of all, you must **Select account** that you will manage. It can be changed in the future.
+
+Then you should be able to do the following **Account** actions:
+ - Check your balance
+ - Send your tokens (ETH, SLP, AXS)
+ - Change your account password
+ - Manage your axies (same as in web interface)
+
+Game **SLP Actions** are also available to you:
+ - Gather to one
+ - Claim all
+
+Use **Permissions** button to manage users, who can interact with your account.
+
+To **Add user**, he **should write any message** to your Telegram bot from his own account.
+Then he can provide you the Telegram ID, which you can successfully register in the bot. 
+
+Once you have added a new user, you can change his status and permissions.
+Please note that if you want to allow sending tokens or axie to another account, you must add the required ronin wallets to the whitelist.
