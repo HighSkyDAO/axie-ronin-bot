@@ -14,7 +14,8 @@ CONFIG.load_config()
 CONFIG.load_users()
 users = CONFIG.users
 bot = telebot.TeleBot(CONFIG.telegram_token)
-BUTTON_BACK_CANCEL = "Cancel/Back"
+BUTTON_BACK_CANCEL = "Back"
+select_next_action = "Please select your next action"
 
 def wallet_balance(wal, isAdmin=False):
     eth_bal = wal.balance()
@@ -144,7 +145,7 @@ def cmd_send(user, message):
         raise BotError("You dont have permission")
         
     if len(user.args) == 0:
-        return "What send?", list(CONFIG.send_limit.keys())
+        return "What do you want to send?", list(CONFIG.send_limit.keys())
           
     type = user.args[0]
     if type not in CONFIG.send_limit:
@@ -488,7 +489,7 @@ def cmd_start(user, message):
     if user.permission_level >= name_to_levels['admin']:
         buttons.append("Permissions")
     
-    buttons += ["Check all balance", "SLP Actions"]
+    buttons += ["Check balance", "SLP Actions"]
     bot.send_message(user.uid, f"Hi, your id: {user.uid}", reply_markup=gen_markup(buttons, exclude_back=True))
     
 def page_axies(user, message):
@@ -496,7 +497,7 @@ def page_axies(user, message):
         user.page.append("Axies")
         
     buttons = ["Buy", "Sell auction", "Sell fixed", "Gift", "Breed", "Morph"]
-    bot.send_message(user.uid, "Which next?", reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
+    bot.send_message(user.uid, select_next_action, reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
 
 def page_account(user, message):
     if message:
@@ -506,26 +507,26 @@ def page_account(user, message):
         resp += "Email: `%s`\n"%(wal.market_mail)
         resp += "Address: `%s`\n"%wal.addr
     else:
-        resp = "Which next?"
+        resp = select_next_action
         
     msg = resp.replace(".", "\\.").replace("-", "\\-")
     
-    buttons = ["Balance", "Send crypto", "Change password", "Change Account", "Axies"]
+    buttons = ["Balance", "Transfer crypto", "Change password", "Change Account", "Axies"]
     bot.send_message(user.uid, msg, reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
 
 def page_permisson(user, message):
     if message:
         user.page.append("Permissions")
         
-    buttons = ["Add user", "Change status", "Add whitelist", "Delete whitelist", "Change user permission"]
-    bot.send_message(user.uid, "Which next?", reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
+    buttons = ["Add user", "Change role", "Add to whitelist", "Delete from whitelist", "Change user permissions"]
+    bot.send_message(user.uid, select_next_action, reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
 
 def page_slps(user, message):
     if message:
         user.page.append("SLP Actions")
         
     buttons = ["Gather to one", "Claim All"]
-    bot.send_message(user.uid, "Which next?", reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
+    bot.send_message(user.uid, select_next_action, reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
     
 command_list = {
     "Account": page_account,
@@ -537,17 +538,17 @@ command_list = {
     "Select Account": cmd_use,
      
     "Balance": cmd_balance,
-    "Send crypto": cmd_send,
+    "Transfer crypto": cmd_send,
     "Change password": cmd_new_pass,
     "Change Account": cmd_use,
     
-    "Check all balance": cmd_info_all,
+    "Check balance": cmd_info_all,
    
     "Add user": cmd_allow,
-    "Add whitelist": cmd_whitelist,
-    "Delete whitelist": cmd_whitelist_del,
-    "Change status": cmd_set_level,
-    "Change user permission": cmd_change_perm,
+    "Add to whitelist": cmd_whitelist,
+    "Delete from whitelist": cmd_whitelist_del,
+    "Change role": cmd_set_level,
+    "Change user permissions": cmd_change_perm,
     
     
     "Buy": cmd_buy,

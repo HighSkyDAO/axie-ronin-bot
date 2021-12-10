@@ -1,0 +1,7 @@
+.git/
+.idea/
+venv/
+scripts/
+
+credentials.json
+config.json
