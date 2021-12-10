@@ -4,7 +4,7 @@ Telegram bot that allows you to grant access to Axie Infinity account without di
 
 ### Core features
 - Adding different user roles and permissions
-- Sale, purchase, gift axies and tokens
+- Sale, purchase, gift Axies and tokens
 - SLP actions: claim and gather
 
 Please note that you are installing the bot yourself on your own server. Only you are responsible for the security of your data. 
@@ -102,7 +102,7 @@ Then you should be able to do the following **Account** actions:
  - Check your balance
  - Send your tokens (ETH, SLP, AXS)
  - Change your account password
- - Manage your axies (same as in web interface)
+ - Manage your Axies (same as in web interface)
 
 Game **SLP Actions** are also available to you:
  - Gather to one
@@ -113,5 +113,5 @@ Use the **Permissions** button to manage users, who can interact with your accou
 To **Add user**, this user **should write any message** to your Telegram bot from his own account first.
 Then this user can provide you the Telegram ID, which you can register in the bot. 
 
-Once you have added a new user, you can change his status and permissions.
-Please note that if you want to allow sending tokens or axie to another account, you must add the required ronin wallets to the whitelist.
+Once you have added a new user, you can change user roles and permissions.
+Please note that if you want to allow sending tokens or Axie to another account, you must add the required ronin wallets to the whitelist.
