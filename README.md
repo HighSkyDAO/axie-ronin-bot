@@ -15,11 +15,11 @@ Please note that you are installing the bot yourself on your own server. Only yo
 First of all, you need a server on which you will run the bot. 
 You can register VPS with any convenient cloud provider.
 For example, you can use the services of [linode.com](https://www.linode.com/) or [vultr.com](https://www.vultr.com/products/cloud-compute/).
-Please note that access to the Axie Infinity website API is blocked for subnets of some providers (For example: DigitalOcean). 
+Please note that access to the Axie Infinity website API is blocked for subnets of some providers (For example DigitalOcean). 
 You may need to use a proxy to run the bot.
 
 The bot will most likely work on any Linux distribution, 
-but in the future the instruction implies that you are using a Debian compatible system, for example, Ubuntu.
+but this instruction implies that you are using a Debian compatible system, for example, Ubuntu.
 
 As soon as you get root access to your server, you will need to register a Telegram bot.
 Use [@BotFather](https://t.me/BotFather) `/newbot` command and get bot username and token. 
@@ -34,6 +34,8 @@ and a Seed Recovery Phrase from your [Ronin Wallet](https://wallet.roninchain.co
 
 ## Installation
 
+Connect to your VPS over [SSH](https://www.linode.com/docs/guides/networking/ssh/).
+
 Download the latest [release](https://github.com/vforvoid/AxieRoninBot/tarball/main) and unpack archive.
 ```shell
 mkdir AxieRoninBot && cd AxieRoninBot
@@ -42,7 +44,7 @@ curl -fsSL https://github.com/vforvoid/AxieRoninBot/tarball/main | tar -xz --str
 
 ### Running in Docker container
 
-If you don't have docker installed yet do it with the command:
+If you don't have docker installed on your VPS, do it with the command:
 ```shell
 curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh && rm get-docker.sh
 ```
@@ -65,7 +67,7 @@ sudo sh scripts/show_bot_logs.sh
 
 ### Manual
 
-You can do without Docker and install the required dependencies manually:
+You can run this bot without Docker and install the required dependencies manually:
 
 ```
 sudo apt install -y python3-pip
@@ -90,10 +92,11 @@ Complete `credentials.json` sample file:
         "proxy": "socks5://user:password@example.com:1080"
     }
 ```
+or just re-run `python3 setup.py` script again, and it will ask you for proxy.
 
 ## How it works
 
-First of all, you must **Select account** that you will manage. It can be changed in the future.
+First, you must **Select account** that you will manage. It can be changed in the future.
 
 Then you should be able to do the following **Account** actions:
  - Check your balance
@@ -105,10 +108,10 @@ Game **SLP Actions** are also available to you:
  - Gather to one
  - Claim all
 
-Use **Permissions** button to manage users, who can interact with your account.
+Use the **Permissions** button to manage users, who can interact with your account.
 
-To **Add user**, he **should write any message** to your Telegram bot from his own account.
-Then he can provide you the Telegram ID, which you can successfully register in the bot. 
+To **Add user**, this user **should write any message** to your Telegram bot from his own account first.
+Then this user can provide you the Telegram ID, which you can register in the bot. 
 
 Once you have added a new user, you can change his status and permissions.
 Please note that if you want to allow sending tokens or axie to another account, you must add the required ronin wallets to the whitelist.

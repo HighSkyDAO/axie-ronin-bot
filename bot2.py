@@ -15,6 +15,7 @@ CONFIG.load_users()
 users = CONFIG.users
 bot = telebot.TeleBot(CONFIG.telegram_token)
 BUTTON_BACK_CANCEL = "Cancel/Back"
+select_next_action = "Please select your next action"
 
 def wallet_balance(wal, isAdmin=False):
     eth_bal = wal.balance()
@@ -496,7 +497,7 @@ def page_axies(user, message):
         user.page.append("Axies")
         
     buttons = ["Buy", "Sell auction", "Sell fixed", "Gift", "Breed", "Morph"]
-    bot.send_message(user.uid, "Which next?", reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
+    bot.send_message(user.uid, select_next_action, reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
 
 def page_account(user, message):
     if message:
@@ -506,7 +507,7 @@ def page_account(user, message):
         resp += "Email: `%s`\n"%(wal.market_mail)
         resp += "Address: `%s`\n"%wal.addr
     else:
-        resp = "Which next?"
+        resp = select_next_action
         
     msg = resp.replace(".", "\\.").replace("-", "\\-")
     
@@ -518,14 +519,14 @@ def page_permisson(user, message):
         user.page.append("Permissions")
         
     buttons = ["Add user", "Change status", "Add whitelist", "Delete whitelist", "Change user permission"]
-    bot.send_message(user.uid, "Which next?", reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
+    bot.send_message(user.uid, select_next_action, reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
 
 def page_slps(user, message):
     if message:
         user.page.append("SLP Actions")
         
     buttons = ["Gather to one", "Claim All"]
-    bot.send_message(user.uid, "Which next?", reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
+    bot.send_message(user.uid, select_next_action, reply_markup=gen_markup(buttons), parse_mode="MarkdownV2")
     
 command_list = {
     "Account": page_account,
