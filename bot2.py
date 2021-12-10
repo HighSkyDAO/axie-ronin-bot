@@ -221,7 +221,8 @@ def cmd_set_level(user, message):
     args = user.args
     if len(args) == 0:
         users = [str(id) for id in CONFIG.allowed_users]
-        users.remove(CONFIG.owner_id)
+        if str(CONFIG.owner_id) in users:
+            users.remove(str(CONFIG.owner_id))
         return "Select or enter user", users
         
     if len(args) == 1:
