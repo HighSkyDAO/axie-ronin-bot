@@ -220,10 +220,10 @@ def cmd_set_level(user, message):
         
     args = user.args
     if len(args) == 0:
-        users = [str(id) for id in CONFIG.allowed_users]
-        if str(CONFIG.owner_id) in users:
-            users.remove(str(CONFIG.owner_id))
-        return "Select or enter user", users
+        user_s = [str(id) for id in CONFIG.allowed_users]
+        if str(CONFIG.owner_id) in user_s:
+            user_s.remove(str(CONFIG.owner_id))
+        return "Select or enter user", user_s
         
     if len(args) == 1:
         lvls = list(name_to_levels.keys())
