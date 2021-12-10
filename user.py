@@ -6,7 +6,7 @@ from ronin import BotError
 from seed import mnemonic_to_private_key, ETH_DERIVATION_PATH
 
 wrt = threading.Lock()
-levels_to_name = {0: "user", 1: "operator", 2: "manager", 3:"trusted", 8: "admin", 9: "owner"}
+levels_to_name = {2: "manager", 8: "admin", 9: "owner"}
 name_to_levels = {}
 for k in levels_to_name:
     name_to_levels[levels_to_name[k]] = k
@@ -164,8 +164,8 @@ class CONFIG(object):
         CONFIG.fill_wallets()
         
         for wal in jIn['wallets']:
-            if wal.addr in CONFIG.wallets:
-                CONFIG.wallets[wal.addr].market_pass = wal['password']
+            if wal in CONFIG.wallets:
+                CONFIG.wallets[wal].market_pass = wal['password']
         
         for uid in jIn['users']:
             uid_ = int(uid)
