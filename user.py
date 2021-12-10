@@ -165,7 +165,7 @@ class CONFIG(object):
         
         for wal in jIn['wallets']:
             if wal in CONFIG.wallets:
-                CONFIG.wallets[wal].market_pass = wal['password']
+                CONFIG.wallets[wal].market_pass = jIn['wallets'][wal]['password']
         
         for uid in jIn['users']:
             uid_ = int(uid)
