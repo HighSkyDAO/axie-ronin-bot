@@ -266,7 +266,9 @@ class Account():
             ret['value'] = slp_info['blockchain_related']["balance"] or 0
             
             if 'signature' in slp_info['blockchain_related'] and slp_info['blockchain_related']['signature']:
-                ret['claimable'] = slp_info['blockchain_related']['signature']['amount'] - slp_info['blockchain_related']['checkpoint']
+                am = slp_info['blockchain_related']['signature']['amount'] or 0
+                chk = slp_info['blockchain_related']['checkpoint'] or 0
+                ret['claimable'] = am - chk
                 ret['allow'] = (time.time() - slp_info['last_claimed_item_at'] >= 14*24*60*60) or ret['claimable'] != 0
                 
         return ret

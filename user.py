@@ -22,6 +22,9 @@ class User():
         self.page = []
         self.username = ""
         self.args = []
+        
+        self.page = 0
+        self.btns = {}
         if new:
             CONFIG.save_config()
     

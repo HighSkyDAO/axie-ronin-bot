@@ -3,7 +3,7 @@ import binascii
 import traceback
 import ronin
 import random
-import time
+import time, math
 from user import User, CONFIG, name_to_levels
 from web3 import Web3
 from ronin import BotError
@@ -567,17 +567,25 @@ command_list = {
     "Claim All": cmd_claim_all
 }
 
-def gen_inline_markup(datas, size):
+def gen_inline_markup(user):
+    datas = user.btns
     if len(datas['text']) != len(datas['callback_data']):
         raise BotError("Missmatch len gen_inline_markup")
         
     markup = InlineKeyboardMarkup()
-    markup.row_width = size
+    markup.row_width = 2
     
-    for i in range(len(datas['text'])):
-        print(datas['text'][i])
-        print(datas['callback_data'][i])
+    cnt = min(len(datas['text']) - (user.page * 10), 10)
+    for i in range(cnt):
+        i += user.page * 10
         markup.add(InlineKeyboardButton(datas['text'][i], callback_data=datas['callback_data'][i]))
+        
+    if user.page == 0:
+        markup.add(InlineKeyboardButton(">>", callback_data="next"))
+    elif cnt != 10 or cnt == 0 or len(datas['text']) - (user.page * 10) == 10:
+        markup.add(InlineKeyboardButton("<<", callback_data="prev"))
+    else:
+        markup.add(InlineKeyboardButton("<<", callback_data="prev"), InlineKeyboardButton(">>", callback_data="next"))
     return markup
     
 @bot.callback_query_handler(func=lambda call: True)
@@ -589,17 +597,28 @@ def callback_query(call):
         mid = call.message.message_id
         
         user = users[uid]
-        user.args.append(call.data)
-        
-        res = command_list[user.command](user, call.message)
-        if res:
-            msg = res[0]
-            btns = res[1]
-            if not isinstance(res[1], dict):
-                btns = {"text": res[1], "callback_data": res[1]}
-            bot.edit_message_text(msg, cid, mid, reply_markup=gen_inline_markup(btns, 1))
-        else:
-            bot.delete_message(cid, mid)
+        if(call.data == "next"):
+            if user.page < math.ceil(len(user.btns['text']) / 10):
+                user.page += 1
+                bot.edit_message_reply_markup(cid, mid, reply_markup=gen_inline_markup(user))
+        elif call.data == "prev":
+            if user.page > 0:
+                user.page -= 1
+                bot.edit_message_reply_markup(cid, mid, reply_markup=gen_inline_markup(user))
+        else:    
+            user.args.append(call.data)
+            
+            res = command_list[user.command](user, call.message)
+            if res:
+                msg = res[0]
+                btns = res[1]
+                if not isinstance(res[1], dict):
+                    btns = {"text": res[1], "callback_data": res[1]}
+                user.btns = btns
+                user.page = 0
+                bot.edit_message_text(msg, cid, mid, reply_markup=gen_inline_markup(user))
+            else:
+                bot.delete_message(cid, mid)
     except BotError as be:
         bot.send_message(uid, 'Error: %s'%be.msg)
         if len(user.args) > 0:
@@ -654,7 +673,10 @@ def parse_text(message):
             btns = res[1]
             if not isinstance(res[1], dict):
                 btns = {"text": res[1], "callback_data": res[1]}
-            bot.send_message(user.uid, msg, reply_markup=gen_inline_markup(btns, 1))
+                
+            user.btns = btns
+            user.page = 0
+            bot.send_message(user.uid, msg, reply_markup=gen_inline_markup(user))
     except BotError as be:
         bot.send_message(uid, 'Error: %s'%be.msg)
         if len(user.args) > 0:
