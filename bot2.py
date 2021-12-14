@@ -575,14 +575,14 @@ def gen_inline_markup(user):
     markup = InlineKeyboardMarkup()
     markup.row_width = 2
     
-    cnt = min(len(datas['text']) - (user.page * 10), 10)
+    cnt = min(len(datas['text']) - (user.page_btns * 10), 10)
     for i in range(cnt):
-        i += user.page * 10
+        i += user.page_btns * 10
         markup.add(InlineKeyboardButton(datas['text'][i], callback_data=datas['callback_data'][i]))
         
-    if user.page == 0:
+    if user.page_btns == 0:
         markup.add(InlineKeyboardButton(">>", callback_data="next"))
-    elif cnt != 10 or cnt == 0 or len(datas['text']) - (user.page * 10) == 10:
+    elif cnt != 10 or cnt == 0 or len(datas['text']) - (user.page_btns * 10) == 10:
         markup.add(InlineKeyboardButton("<<", callback_data="prev"))
     else:
         markup.add(InlineKeyboardButton("<<", callback_data="prev"), InlineKeyboardButton(">>", callback_data="next"))
@@ -598,12 +598,12 @@ def callback_query(call):
         
         user = users[uid]
         if(call.data == "next"):
-            if user.page < math.ceil(len(user.btns['text']) / 10):
-                user.page += 1
+            if user.page_btns < math.ceil(len(user.btns['text']) / 10):
+                user.page_btns += 1
                 bot.edit_message_reply_markup(cid, mid, reply_markup=gen_inline_markup(user))
         elif call.data == "prev":
-            if user.page > 0:
-                user.page -= 1
+            if user.page_btns > 0:
+                user.page_btns -= 1
                 bot.edit_message_reply_markup(cid, mid, reply_markup=gen_inline_markup(user))
         else:    
             user.args.append(call.data)
@@ -615,7 +615,7 @@ def callback_query(call):
                 if not isinstance(res[1], dict):
                     btns = {"text": res[1], "callback_data": res[1]}
                 user.btns = btns
-                user.page = 0
+                user.page_btns = 0
                 bot.edit_message_text(msg, cid, mid, reply_markup=gen_inline_markup(user))
             else:
                 bot.delete_message(cid, mid)
@@ -675,7 +675,7 @@ def parse_text(message):
                 btns = {"text": res[1], "callback_data": res[1]}
                 
             user.btns = btns
-            user.page = 0
+            user.page_btns = 0
             bot.send_message(user.uid, msg, reply_markup=gen_inline_markup(user))
     except BotError as be:
         bot.send_message(uid, 'Error: %s'%be.msg)
