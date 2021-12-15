@@ -67,7 +67,8 @@ class Account():
             for i in range(5):
                 resp = self.r.post(url, json=reqData, headers=CONFIG.headers, proxies=proxy)
                 if resp.status_code != 200:
-                    print("CODE: %d, %s"%(resp.status_code, resp.text))
+                    if i == 4:
+                        print("CODE: %d, %s"%(resp.status_code, resp.text))
                 else:
                     jData = json.loads(resp.text)
                     if "errors" in jData:
