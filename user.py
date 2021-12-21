@@ -141,7 +141,7 @@ class CONFIG(object):
         while True:
             private_key = mnemonic_to_private_key(CONFIG.seed, str_derivation_path=f'{ETH_DERIVATION_PATH}/{i}')
             acc = ronin.Account(private_key, True)
-            if acc.market_mail == "-":
+            if acc.market_mail == "-" and i > 1:
                 break
                 
             print("Imported: %s"%acc.addr)

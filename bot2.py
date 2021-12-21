@@ -380,15 +380,15 @@ def cmd_claim_all(user, message):
     if not user.permissions['claim']:
         raise BotError("You dont have permission")
         
-    resp = "Summary:\n"
+    bot.send_message(user.uid, "Handle you request...")
     for wal_id in CONFIG.wallets:
         wal = CONFIG.wallets[wal_id]
         slp_bal = wal.slp_balance()
         if slp_bal['allow']:
             txID = wal.claim_slp()
-            resp += f"Claim {wal.market_name} {txID}\n"
+            bot.send_message(user.uid, f"{wal.market_name} claimed\n{txID}")
         
-    bot.send_message(user.uid, resp)  
+    bot.send_message(user.uid, f"That's all")
         
 def cmd_claim_gather(user, message):
     if not user.permissions['claim']:

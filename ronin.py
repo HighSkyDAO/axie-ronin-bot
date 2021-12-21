@@ -7,8 +7,10 @@ from typing import NamedTuple
 from eth_utils.curried import to_bytes
 from eth_keys import keys
 from web3 import Web3, HTTPProvider
+import web3
 from hexbytes import HexBytes
 import traceback
+import itertools
 
 proxy = {}
 
@@ -40,6 +42,40 @@ def encode_defunct(
         b'thereum Signed Message:\n' + msg_length,
         message_bytes,
     )
+
+def decode_out(fn, return_data):
+    output_types = web3.contract.get_abi_output_types(fn.abi)
+
+    try:
+        output_data = fn.web3.codec.decode_abi(output_types, return_data)
+    except DecodingError as e:
+        # Provide a more helpful error message than the one provided by
+        # eth-abi-utils
+        is_missing_code_error = (
+            return_data in ACCEPTABLE_EMPTY_STRINGS
+            and web3.eth.get_code(address) in ACCEPTABLE_EMPTY_STRINGS)
+        if is_missing_code_error:
+            msg = (
+                "Could not transact with/call contract function, is contract "
+                "deployed correctly and chain synced?"
+            )
+        else:
+            msg = (
+                f"Could not decode contract function call to {function_identifier} with "
+                f"return data: {str(return_data)}, output_types: {output_types}"
+            )
+        raise BadFunctionCallOutput(msg) from e
+
+    _normalizers = itertools.chain(
+        web3.contract.BASE_RETURN_NORMALIZERS,
+        fn._return_data_normalizers
+    )
+    normalized_data = web3.contract.map_abi_data(_normalizers, output_types, output_data)
+
+    if len(normalized_data) == 1:
+        return normalized_data[0]
+    else:
+        return normalized_data
     
 class Account():
     def __init__(self, private_key, login=False):
@@ -61,11 +97,15 @@ class Account():
     def create():
         return Account()
     
-    def send_req(self, url, reqData):
+    def send_req(self, url, reqData, post=True):
         try:
             error = ""
             for i in range(5):
-                resp = self.r.post(url, json=reqData, headers=CONFIG.headers, proxies=proxy)
+                if post:
+                    resp = self.r.post(url, json=reqData, headers=CONFIG.headers, proxies=proxy)
+                else:
+                    resp = self.r.get(url, json=reqData, headers=CONFIG.headers, proxies=proxy)
+                    
                 if resp.status_code != 200:
                     if i == 4:
                         print("CODE: %d, %s"%(resp.status_code, resp.text))
@@ -125,20 +165,13 @@ class Account():
         
         self.market_pass = new_pass
         return new_pass
-    
-    def get_slp_info(self):
-        if not self.auth:
-            self.login_market()
-            
-        jData = self.send_req(f"https://game-api.skymavis.com/game-api/clients/{self.addr}/items/1/claim", None)
-        return jData
-    
+        
     def claim_slp(self):
-        slp_info = self.get_slp_info()
+        slp_info = self.slp_balance()
         from_addr = Web3.toChecksumAddress(self.addr)
-        slp_sign = slp_info["blockchain_related"]['signature']
-        if not slp_sign or (time.time() - slp_info['last_claimed_item_at'] < 14*24*60*60 and slp_sign['amount'] == slp_info['blockchain_related']['checkpoint']):
-            raise BotError("Now you cant claim SLP")
+        slp_sign = slp_info['signature']
+        if not slp_sign or not slp_info['allow']:
+            raise BotError("You cant claim SLP now")
             
         txn = slp_contract.functions.checkpoint(from_addr, slp_sign["amount"], slp_sign["timestamp"], slp_sign['signature'])
         return self.send_raw(txn)
@@ -260,17 +293,28 @@ class Account():
         return Web3.fromWei(int(HexBytes(resp).hex(), 16), 'ether')
         
     def slp_balance(self):
-        slp_info = self.get_slp_info()
+        if not self.auth:
+            self.login_market()
         
-        ret = {"value": 0, 'allow': False, 'claimable': 0}
-        if 'blockchain_related' in slp_info:
-            ret['value'] = slp_info['blockchain_related']["balance"] or 0
+        ret = {}
+        ret["value"] = 0
+        ret["allow"] = False
+        ret["claimable"] = 0
+        ret['signature'] = None
+
+        func = slp_contract.functions.balanceOf(Web3.toChecksumAddress(self.addr))
+        resp = common_eth.call(func.buildTransaction({'gas': 1000000, 'gasPrice': 0}))
+        ret["value"] = decode_out(func, resp)
+        
+        slp_info = self.send_req(f"https://game-api.skymavis.com/game-api/clients/{self.addr}/items/1", None, False)
+        #print(json.dumps(slp_info, indent=4))
+                
+        if 'blockchain_related' in slp_info and 'signature' in slp_info['blockchain_related']:
+            ret['signature'] = slp_info['blockchain_related']['signature']
             
-            if 'signature' in slp_info['blockchain_related'] and slp_info['blockchain_related']['signature']:
-                am = slp_info['blockchain_related']['signature']['amount'] or 0
-                chk = slp_info['blockchain_related']['checkpoint'] or 0
-                ret['claimable'] = am - chk
-                ret['allow'] = (time.time() - slp_info['last_claimed_item_at'] >= 14*24*60*60) or ret['claimable'] != 0
+            if ret['signature']:
+                ret['claimable'] = slp_info["raw_claimable_total"] - ret['signature']["amount"]
+                ret['allow'] = (time.time() - slp_info['last_claimed_item_at'] >= 14*24*60*60) and ret['claimable'] != 0
                 
         return ret
         
