@@ -471,6 +471,9 @@ def move_back(user, text):
     else:
         command = "/start"
             
+    for ec in ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']:
+        text = text.replace(ec, "\\"+ec)
+        
     bot.send_message(user.uid, text.replace(".", "\\.").replace("-", "\\-"), parse_mode="MarkdownV2")  
     if "page_" in command_list[command].__name__ or command == "/start":
         command_list[command](user, None)
