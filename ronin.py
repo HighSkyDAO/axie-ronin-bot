@@ -313,7 +313,7 @@ class Account():
             ret['signature'] = slp_info['blockchain_related']['signature']
             
             if ret['signature']:
-                ret['claimable'] = slp_info["raw_claimable_total"] - ret['signature']["amount"]
+                ret['claimable'] = slp_info["raw_claimable_total"] - slp_info["raw_total"]
                 ret['allow'] = (time.time() - slp_info['last_claimed_item_at'] >= 14*24*60*60) and ret['claimable'] != 0
                 
         return ret
