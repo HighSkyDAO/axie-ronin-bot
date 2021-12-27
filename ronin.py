@@ -173,7 +173,7 @@ class Account():
         if not slp_sign or not slp_info['allow']:
             raise BotError("You cant claim SLP now")
             
-        txn = slp_contract.functions.checkpoint(from_addr, slp_sign["amount"], slp_sign["timestamp"], slp_sign['signature'])
+        txn = slp_contract.functions.checkpoint(from_addr, slp_info["raw_total"], slp_sign["timestamp"], slp_sign['signature'])
         return self.send_raw(txn)
         
     def sign(self, msg):
@@ -301,7 +301,7 @@ class Account():
         ret["allow"] = False
         ret["claimable"] = 0
         ret['signature'] = None
-
+        
         func = slp_contract.functions.balanceOf(Web3.toChecksumAddress(self.addr))
         resp = common_eth.call(func.buildTransaction({'gas': 1000000, 'gasPrice': 0}))
         ret["value"] = decode_out(func, resp)
@@ -315,6 +315,7 @@ class Account():
             if ret['signature']:
                 ret['claimable'] = slp_info["raw_total"] - slp_info["raw_claimable_total"]
                 ret['allow'] = (time.time() - slp_info['last_claimed_item_at'] >= 14*24*60*60) and ret['claimable'] != 0
+                ret["raw_total"] = slp_info["raw_total"]
                 
         return ret
         
