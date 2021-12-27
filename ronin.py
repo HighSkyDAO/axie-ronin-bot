@@ -173,6 +173,8 @@ class Account():
         if not slp_sign or not slp_info['allow']:
             raise BotError("You cant claim SLP now")
             
+        slp_info = self.slp_balance(True)
+        slp_sign = slp_info['signature']
         txn = slp_contract.functions.checkpoint(from_addr, slp_info["raw_total"], slp_sign["timestamp"], slp_sign['signature'])
         return self.send_raw(txn)
         
@@ -202,6 +204,7 @@ class Account():
             
         from_addr = Web3.toChecksumAddress(self.addr)
         nonce = free_eth.get_transaction_count(from_addr)
+        print(txn)
         est_gas = free_eth.estimate_gas({'from': from_addr, 'to': txn.address, 'data':txn._encode_transaction_data()})
         txn = txn.buildTransaction({'gas': est_gas, 'gasPrice': 0, 'nonce': nonce})
         
@@ -292,7 +295,7 @@ class Account():
         resp = common_eth.call(data)
         return Web3.fromWei(int(HexBytes(resp).hex(), 16), 'ether')
         
-    def slp_balance(self):
+    def slp_balance(self, claim=False):
         if not self.auth:
             self.login_market()
         
@@ -306,8 +309,11 @@ class Account():
         resp = common_eth.call(func.buildTransaction({'gas': 1000000, 'gasPrice': 0}))
         ret["value"] = decode_out(func, resp)
         
-        slp_info = self.send_req(f"https://game-api.skymavis.com/game-api/clients/{self.addr}/items/1", None, False)
-        #print(json.dumps(slp_info, indent=4))
+        if not claim:
+            slp_info = self.send_req(f"https://game-api.skymavis.com/game-api/clients/{self.addr}/items/1", None, False)
+        else:
+            slp_info = self.send_req(f"https://game-api.skymavis.com/game-api/clients/{self.addr}/items/1/claim", None, True)
+        print(json.dumps(slp_info, indent=4))
                 
         if 'blockchain_related' in slp_info and 'signature' in slp_info['blockchain_related']:
             ret['signature'] = slp_info['blockchain_related']['signature']
