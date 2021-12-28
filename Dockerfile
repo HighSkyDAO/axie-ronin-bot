@@ -10,7 +10,7 @@ ENV PYTHONUNBUFFERED 1
 COPY ./requirements.txt .
 RUN apk update \
     && apk add build-base \
-    && pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+    && pip wheel --disable-pip-version-check --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 # Final stage
 FROM python:3.7.12-alpine3.15
@@ -25,7 +25,7 @@ COPY . /usr/src/app/
 
 # Copy build dependencies from the build stage
 COPY --from=builder /usr/src/app/wheels /wheels
-RUN pip install --no-cache /wheels/*
+RUN pip install --disable-pip-version-check --no-cache /wheels/*
 
 # Run the app
 CMD [ "python", "./bot2.py" ]
