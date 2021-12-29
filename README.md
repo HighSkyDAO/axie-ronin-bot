@@ -59,10 +59,30 @@ To start bot itself run:
 sudo sh scripts/run_bot.sh
 ```
 
+Change the proxy for the bot:
+
+```shell
+sudo sh scripts/set_proxy.sh
+```
+
 To see bot logs run:
 
-```
+```shell
 sudo sh scripts/show_bot_logs.sh
+```
+
+To restart bot:
+
+```shell
+sudo sh scripts/restart_bot.sh
+```
+
+To remove bot completely:
+
+```shell
+sudo sh scripts/remove_bot.sh
+cd ..
+rm -r AxieRoninBot
 ```
 
 ### Manual
@@ -71,7 +91,7 @@ You can run this bot without Docker and install the required dependencies manual
 
 ```
 sudo apt install -y python3-pip
-sudo pip3 install pyTelegramBotAPI web3 ecdsa requests[socks]
+pip3 install -r requirements.txt
 python3 setup.py
 python3 bot2.py
 ```
@@ -79,20 +99,29 @@ python3 bot2.py
 ### Using proxy
 
 If you see errors about denying access to the server in the logs after starting the bot, you can use a proxy.
-This bot supports http and socks5 proxy types. Add `proxy` parameter in credentials.json 
- - `socks5://user:password@example.com:1080` for socks5
- - `http://user:password@example.com:1080` for http
+This bot supports http and socks5 proxy types. 
+ - `socks5://user:password@192.168.0.1:1080` for socks5
+ - `http://user:password@192.168.0.1:1080` for http
 
-Complete `credentials.json` sample file:
+To add proxy run the script:
+```shell
+sudo sh scripts/set_proxy.sh
+```
+
+You can also update the file `credentials.json` manually using this format:
 ```json
     {
         "owner_id": 50123456,
         "seed": "12 seed phrase words",
         "telegram_token": "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11",
-        "proxy": "socks5://user:password@example.com:1080"
+        "proxy": "socks5://user:password@192.168.0.1:1080"
     }
 ```
-or just re-run `python3 setup.py` script again, and it will ask you for proxy.
+
+Then you should restart bot using the command:
+```shell
+sudo sh scripts/restart_bot.sh
+```
 
 ## How it works
 
