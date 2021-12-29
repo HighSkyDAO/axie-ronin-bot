@@ -59,6 +59,12 @@ To start bot itself run:
 sudo sh scripts/run_bot.sh
 ```
 
+Change the proxy for the bot:
+
+```shell
+sudo sh scripts/set_proxy.sh
+```
+
 To see bot logs run:
 
 ```shell
@@ -71,7 +77,7 @@ To restart bot:
 sudo sh scripts/restart_bot.sh
 ```
 
-To remove bot completely, while in the bot folder:
+To remove bot completely:
 
 ```shell
 sudo sh scripts/remove_bot.sh
@@ -79,14 +85,13 @@ cd ..
 rm -r AxieRoninBot
 ```
 
-
 ### Manual
 
 You can run this bot without Docker and install the required dependencies manually:
 
 ```
 sudo apt install -y python3-pip
-sudo pip3 install pyTelegramBotAPI web3 ecdsa requests[socks]
+pip3 install -r requirements.txt
 python3 setup.py
 python3 bot2.py
 ```
@@ -100,7 +105,7 @@ This bot supports http and socks5 proxy types.
 
 To add proxy run the script:
 ```shell
-sudo sh scripts/add_proxy.sh
+sudo sh scripts/set_proxy.sh
 ```
 
 You can also update the file `credentials.json` manually using this format:
