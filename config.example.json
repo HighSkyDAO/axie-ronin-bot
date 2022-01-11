@@ -1,8 +1,8 @@
 {
     "send_limit": {
-        "ETH": 0.01,
-        "SLP": 1000,
-        "AXS": 1
+        "ETH": 999,
+        "SLP": 999999,
+        "AXS": 999999
     },
     "axie_buy_max": 0.1,
     "axie_sell_max": 0.1,
