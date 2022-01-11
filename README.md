@@ -36,10 +36,10 @@ and a Seed Recovery Phrase from your [Ronin Wallet](https://wallet.roninchain.co
 
 Connect to your VPS over [SSH](https://www.linode.com/docs/guides/networking/ssh/).
 
-Download the latest [release](https://github.com/psih31337/AxieRoninBot/tarball/main) and unpack archive.
+Download the latest [release](https://github.com/HighSkyDAO/AxieRoninBot/tarball/main) and unpack archive.
 ```shell
 mkdir AxieRoninBot && cd AxieRoninBot
-curl -fsSL https://github.com/psih31337/AxieRoninBot/tarball/main | tar -xz --strip-components=1
+curl -fsSL https://github.com/HighSkyDAO/AxieRoninBot/tarball/main | tar -xz --strip-components=1
 ```
 
 ### Running in Docker container
